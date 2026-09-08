@@ -5,12 +5,14 @@ import { qualityFactor, qualityIndex } from "./quality";
 import { estimateTollRoundTrip } from "./tolls";
 import { trafficFactors } from "./traffic";
 import { estimateWeather, weatherPenalty as computeWeatherPenalty } from "./weather";
+import { MIN_RENTAL_DAY } from "./pricing";
 import type {
   CostBreakdown,
   DriveInfo,
   RankedResort,
   Resort,
   SearchInput,
+  SkierLevel,
 } from "./types";
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
