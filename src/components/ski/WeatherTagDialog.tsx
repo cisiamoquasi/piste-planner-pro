@@ -50,6 +50,22 @@ export function WeatherTagDialog({
         </Badge>
       </button>
 
+      <TooltipProvider delayDuration={150}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              onClick={(e) => e.stopPropagation()}
+              aria-label="Origine dei dati meteo"
+              className="text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              <Info className="h-3.5 w-3.5" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-xs text-xs">{SOURCE_NOTE}</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-h-[85vh] max-w-lg overflow-y-auto">
           <DialogHeader>
@@ -109,13 +125,13 @@ export function WeatherTagDialog({
               </ul>
             </div>
 
-            <p className="text-xs text-muted-foreground">
-              Previsioni indicative elaborate su quota, periodo e innevamento della località:
-              verifica il bollettino ufficiale prima di partire.
+            <p className="flex items-start gap-2 text-xs text-muted-foreground">
+              <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              {SOURCE_NOTE} Verifica sempre il bollettino ufficiale prima di partire.
             </p>
           </div>
         </DialogContent>
       </Dialog>
-    </>
+    </span>
   );
 }
