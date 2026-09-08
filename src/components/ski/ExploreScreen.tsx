@@ -248,8 +248,16 @@ export function ExploreScreen() {
                   </div>
                   <div>
                     <dt>Neve</dt>
-                    <dd className="font-semibold text-foreground">
-                      {extra?.snow_report ?? `${r.snowmaking_coverage}% innevamento`}
+                    <dd
+                      className={
+                        season.open
+                          ? "font-semibold text-foreground"
+                          : "font-medium text-muted-foreground"
+                      }
+                    >
+                      {season.open
+                        ? (extra?.snow_report ?? `${r.snowmaking_coverage}% innevamento`)
+                        : "Dato non disponibile (pausa stagionale)"}
                     </dd>
                   </div>
                 </dl>
