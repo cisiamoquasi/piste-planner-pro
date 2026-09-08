@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, CheckCircle2, Loader2, Snowflake } from "lucide-react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import { estimateRoadKm } from "@/lib/ski/geo";
 import { rankResorts, rentalDailyPrice } from "@/lib/ski/scoring";
 import { departureIso } from "@/lib/ski/traffic";
 import { isResortOpen, seasonForRange } from "@/lib/ski/season";
+import { loadPendingItinerary } from "@/lib/ski/pending-itinerary";
 import type { DriveInfo, Resort, SearchInput } from "@/lib/ski/types";
 
 const searchSchema = z.object({
@@ -195,6 +196,19 @@ function ResultsPage() {
   const selectedResort = selectedId
     ? ranked.find((r) => r.resort.id === selectedId)?.resort ?? null
     : null;
+
+  // Ritorno dal login: riapriamo la destinazione della bozza salvata.
+  const draftRestored = useRef(false);
+  useEffect(() => {
+    if (draftRestored.current || ranked.length === 0) return;
+    const draft = loadPendingItinerary();
+    if (!draft) return;
+    const index = ranked.findIndex((r) => r.resort.id === draft.resortId);
+    if (index < 0) return;
+    draftRestored.current = true;
+    setSelectedId(draft.resortId);
+    setVisible((v) => Math.max(v, index + 1));
+  }, [ranked]);
   const shown = ranked.slice(0, visible);
 
   return (

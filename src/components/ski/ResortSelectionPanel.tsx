@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Link } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, BedDouble, CheckCircle2, Loader2, MapPin, Plus, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +18,11 @@ import {
   totalNights,
   tripBreakdown,
 } from "@/lib/ski/pricing";
+import {
+  clearPendingItinerary,
+  loadPendingItinerary,
+  savePendingItinerary,
+} from "@/lib/ski/pending-itinerary";
 import type { Resort } from "@/lib/ski/types";
 
 interface Props {
@@ -70,6 +75,11 @@ export function ResortSelectionPanel({
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+  /** Ripristino della bozza salvata prima del login. */
+  const [autoSave, setAutoSave] = useState(false);
+  const draftApplied = useRef(false);
+
 
   // L'utente può salvare solo dopo aver confrontato e scelto hotel + noleggio.
   const datesReady = Boolean(startDate && endDate);
@@ -125,6 +135,18 @@ export function ResortSelectionPanel({
     };
   }, [resort.id, resort.lat, resort.lng, radiusM, findNearby]);
 
+  // Dopo il login ripristiniamo alloggio e noleggio scelti prima dell'accesso.
+  useEffect(() => {
+    if (loading || draftApplied.current || !userId) return;
+    const draft = loadPendingItinerary();
+    if (!draft || draft.resortId !== resort.id || !draft.hotel || !draft.rental) return;
+    draftApplied.current = true;
+    setHotel(draft.hotel);
+    setRental(draft.rental);
+    setAutoSave(true);
+  }, [loading, userId, resort.id]);
+
+
   const save = async () => {
     if (!canSave || !hotel || !rental) return;
     setSaving(true);
@@ -166,6 +188,30 @@ export function ResortSelectionPanel({
       setSaving(false);
     }
   };
+
+  // Bozza ripristinata: salviamo subito senza far rifare la ricerca all'utente.
+  useEffect(() => {
+    if (!autoSave || !hotel || !rental || saving) return;
+    setAutoSave(false);
+    clearPendingItinerary();
+    void save();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoSave, hotel, rental]);
+
+  /** Utente non autenticato: mettiamo da parte la bozza e andiamo al login. */
+  const goToLogin = () => {
+    savePendingItinerary({
+      resortId: resort.id,
+      hotel,
+      rental,
+      returnTo: `${window.location.pathname}${window.location.search}`,
+    });
+    void navigate({
+      to: "/auth",
+      search: { next: `${window.location.pathname}${window.location.search}` },
+    });
+  };
+
 
   return (
     <div className="rounded-2xl border border-primary/40 bg-card p-6 shadow-sm">
@@ -292,11 +338,15 @@ export function ResortSelectionPanel({
             Aggiungi itinerario
           </Button>
         ) : (
-          <Button asChild variant="secondary" className="mt-3 w-full sm:w-auto">
-            <Link to="/auth" search={{ next: "/itinerario" }}>
+          <>
+            <Button variant="secondary" className="mt-3 w-full sm:w-auto" onClick={goToLogin}>
               Accedi per salvare l'itinerario
-            </Link>
-          </Button>
+            </Button>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Le tue scelte restano salvate: dopo l'accesso ritrovi questo itinerario pronto da
+              confermare.
+            </p>
+          </>
         )}
       </div>
     </div>
