@@ -42,6 +42,9 @@ const searchSchema = z.object({
   returnTime: z.string().regex(/^\d{2}:\d{2}$/).default("17:30"),
   hotel: z.boolean().default(false),
   hotelCategory: z.enum(["budget", "comfort", "luxury"]).default("comfort"),
+  adultsCount: z.number().min(1).max(20).default(1),
+  childrenCount: z.number().min(0).max(20).default(0),
+  rentalCount: z.number().min(0).max(40).default(0),
   /** Comprensorio scelto dall'utente: resta sempre in prima posizione. */
   targetResort: z.string().optional(),
 });
@@ -122,6 +125,9 @@ function ResultsPage() {
     returnTime: search.returnTime,
     hotel: search.hotel,
     hotelCategory: search.hotelCategory,
+    adultsCount: search.adultsCount,
+    childrenCount: search.childrenCount,
+    rentalCount: search.rentalCount,
   };
 
   // Fase A: ranking grezzo sui comprensori aperti con drive stimate.
