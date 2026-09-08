@@ -100,11 +100,18 @@ export function NewsList({ news }: { news: NewsItem[] }) {
         })}
       </div>
 
-      {hasMore && (
-        <div className="mt-5 flex justify-center">
-          <Button variant="secondary" onClick={() => setVisible((v) => v + STEP)}>
-            Mostra altre notizie
-          </Button>
+      {(hasMore || visible > INITIAL) && (
+        <div className="mt-5 flex flex-wrap justify-center gap-2">
+          {hasMore && (
+            <Button variant="secondary" onClick={() => setVisible((v) => v + STEP)}>
+              Mostra altre notizie
+            </Button>
+          )}
+          {visible > INITIAL && (
+            <Button variant="outline" onClick={showLess}>
+              Mostra meno
+            </Button>
+          )}
         </div>
       )}
     </div>
