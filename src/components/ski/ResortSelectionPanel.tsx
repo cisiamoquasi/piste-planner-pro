@@ -44,6 +44,9 @@ export function ResortSelectionPanel({
   radiusM,
   travelCost = 0,
   skipassCost = 0,
+  totalGuests = 1,
+  rentalCount = 0,
+  defaultRentalPerDay = 0,
   efficiencyScore,
   onBack,
   onSaved,
@@ -70,8 +73,11 @@ export function ResortSelectionPanel({
     travel: travelCost,
     skipass: skipassCost,
     nightPrice: hotel ? estimatedNightPrice(hotel) : 0,
-    rentalPerDay: rental ? estimatedRentalPrice(rental) : 0,
+    // Prima di scegliere il negozio usiamo la stima media: mai 0 €.
+    rentalPerDay: rental ? estimatedRentalPrice(rental) : defaultRentalPerDay,
     totalDays: days,
+    totalGuests,
+    rentalCount,
   });
 
   useEffect(() => {
