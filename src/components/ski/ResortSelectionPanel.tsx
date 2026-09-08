@@ -189,6 +189,30 @@ export function ResortSelectionPanel({
     }
   };
 
+  // Bozza ripristinata: salviamo subito senza far rifare la ricerca all'utente.
+  useEffect(() => {
+    if (!autoSave || !hotel || !rental || saving) return;
+    setAutoSave(false);
+    clearPendingItinerary();
+    void save();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoSave, hotel, rental]);
+
+  /** Utente non autenticato: mettiamo da parte la bozza e andiamo al login. */
+  const goToLogin = () => {
+    savePendingItinerary({
+      resortId: resort.id,
+      hotel,
+      rental,
+      returnTo: `${window.location.pathname}${window.location.search}`,
+    });
+    void navigate({
+      to: "/auth",
+      search: { next: `${window.location.pathname}${window.location.search}` },
+    });
+  };
+
+
   return (
     <div className="rounded-2xl border border-primary/40 bg-card p-6 shadow-sm">
       <button
