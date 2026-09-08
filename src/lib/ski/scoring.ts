@@ -48,6 +48,10 @@ export function servicesAvailability(resort: Resort, radiusM: number): number {
   return Math.round((kmScore * 0.6 + liftScore * 0.4) * 100) / 100;
 }
 
+/** Sconto standard sullo skipass bambini rispetto alla tariffa adulti. */
+export const CHILD_SKIPASS_RATIO = 0.7;
+
+/** Skipass adulto per l'intero periodo. */
 export function skipassCost(resort: Resort, days: number): number {
   const t = resort.skipass;
   if (days <= 1) return t.day1;
@@ -55,6 +59,35 @@ export function skipassCost(resort: Resort, days: number): number {
   if (days === 3) return t.day3;
   if (days <= 6) return Math.round(t.day3 + (days - 3) * ((t.day6 - t.day3) / 3));
   return Math.round(t.day6 + (days - 6) * (t.day6 / 6) * 0.85);
+}
+
+/** Tariffa giornaliera adulto e bambino. */
+export function skipassDailyRates(
+  resort: Resort,
+  days: number,
+): { adult: number; child: number } {
+  const perDay = skipassCost(resort, days) / Math.max(1, days);
+  return {
+    adult: Math.round(perDay * 100) / 100,
+    child: Math.round(perDay * CHILD_SKIPASS_RATIO * 100) / 100,
+  };
+}
+
+/** Skipass totale differenziando adulti e bambini. */
+export function skipassTotal(
+  resort: Resort,
+  days: number,
+  adultsCount: number,
+  childrenCount: number,
+): number {
+  const { adult, child } = skipassDailyRates(resort, days);
+  const total = (Math.max(1, adultsCount) * adult + Math.max(0, childrenCount) * child) * days;
+  return Math.round(total * 100) / 100;
+}
+
+/** Camere necessarie: due ospiti per camera. */
+export function roomsNeeded(totalGuests: number): number {
+  return Math.max(1, Math.ceil(Math.max(1, totalGuests) / 2));
 }
 
 export function queueHoursPerDay(resort: Resort, weekend: boolean): number {
