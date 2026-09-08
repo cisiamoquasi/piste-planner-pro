@@ -1,3 +1,5 @@
+import type { WeatherEstimate } from "./weather";
+
 export type SkierLevel = "beginner" | "intermediate" | "advanced";
 export type FuelType = "petrol" | "diesel" | "electric";
 
@@ -90,6 +92,12 @@ export interface SearchInput {
   /** Pernottamento in hotel. */
   hotel: boolean;
   hotelCategory: HotelCategory;
+  /** Numero di adulti in viaggio (minimo 1). */
+  adultsCount: number;
+  /** Numero di bambini in viaggio. */
+  childrenCount: number;
+  /** Persone che necessitano del noleggio attrezzatura. */
+  rentalCount: number;
 }
 
 export interface DriveInfo {
@@ -128,7 +136,7 @@ export interface RankedResort {
   weatherPenalty: number;
   budgetPenalty: number;
   overBudget: boolean;
-  weather: { score: number; label: string; detail: string };
+  weather: WeatherEstimate;
   outboundHours: number;
   returnHours: number;
   trafficLabel: string;
