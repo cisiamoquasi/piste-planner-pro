@@ -196,6 +196,19 @@ function ResultsPage() {
   const selectedResort = selectedId
     ? ranked.find((r) => r.resort.id === selectedId)?.resort ?? null
     : null;
+
+  // Ritorno dal login: riapriamo la destinazione della bozza salvata.
+  const draftRestored = useRef(false);
+  useEffect(() => {
+    if (draftRestored.current || ranked.length === 0) return;
+    const draft = loadPendingItinerary();
+    if (!draft) return;
+    const index = ranked.findIndex((r) => r.resort.id === draft.resortId);
+    if (index < 0) return;
+    draftRestored.current = true;
+    setSelectedId(draft.resortId);
+    setVisible((v) => Math.max(v, index + 1));
+  }, [ranked]);
   const shown = ranked.slice(0, visible);
 
   return (
