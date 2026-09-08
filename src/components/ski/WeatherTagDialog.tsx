@@ -1,6 +1,16 @@
 import { useState } from "react";
-import { CloudSun, Droplets, Snowflake, Thermometer, Wind } from "lucide-react";
+import { CloudSun, Droplets, Info, Snowflake, Thermometer, Wind } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+/** Nota sulla provenienza del dato meteo, mostrata nel tooltip e nella modale. */
+const SOURCE_NOTE =
+  "Meteo calcolato in tempo reale tramite OpenWeather API utilizzando le coordinate geografiche base del comprensorio per i giorni selezionati.";
 import {
   Dialog,
   DialogContent,
@@ -24,7 +34,7 @@ export function WeatherTagDialog({
   const [open, setOpen] = useState(false);
 
   return (
-    <>
+    <span className="inline-flex items-center gap-1">
       <button
         type="button"
         onClick={(e) => {
