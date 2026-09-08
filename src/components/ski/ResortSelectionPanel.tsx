@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Link } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, BedDouble, CheckCircle2, Loader2, MapPin, Plus, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +18,11 @@ import {
   totalNights,
   tripBreakdown,
 } from "@/lib/ski/pricing";
+import {
+  clearPendingItinerary,
+  loadPendingItinerary,
+  savePendingItinerary,
+} from "@/lib/ski/pending-itinerary";
 import type { Resort } from "@/lib/ski/types";
 
 interface Props {
