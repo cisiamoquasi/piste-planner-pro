@@ -23,6 +23,12 @@ interface Props {
   travelCost?: number;
   /** Costo skipass per il periodo scelto. */
   skipassCost?: number;
+  /** Ospiti totali (adulti + bambini). */
+  totalGuests?: number;
+  /** Persone che noleggiano l'attrezzatura. */
+  rentalCount?: number;
+  /** Stima €/giorno del noleggio prima di scegliere il negozio. */
+  defaultRentalPerDay?: number;
   /** Voto di efficienza calcolato per questo comprensorio. */
   efficiencyScore?: number;
   onBack: () => void;
