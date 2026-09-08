@@ -338,11 +338,15 @@ export function ResortSelectionPanel({
             Aggiungi itinerario
           </Button>
         ) : (
-          <Button asChild variant="secondary" className="mt-3 w-full sm:w-auto">
-            <Link to="/auth" search={{ next: "/itinerario" }}>
+          <>
+            <Button variant="secondary" className="mt-3 w-full sm:w-auto" onClick={goToLogin}>
               Accedi per salvare l'itinerario
-            </Link>
-          </Button>
+            </Button>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Le tue scelte restano salvate: dopo l'accesso ritrovi questo itinerario pronto da
+              confermare.
+            </p>
+          </>
         )}
       </div>
     </div>
