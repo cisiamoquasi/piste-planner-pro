@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { CalendarClock, MapPin, Mountain, Search, Snowflake } from "lucide-react";
@@ -50,6 +50,7 @@ export function ExploreScreen() {
   const [minKm, setMinKm] = useState(0);
   const [snow, setSnow] = useState<string>("Tutte");
   const [visible, setVisible] = useState(INITIAL_DESTINATIONS);
+  const destinationsRef = useRef<HTMLHeadingElement>(null);
 
   const regions = useMemo(() => ["Tutte", ...CATALOG_REGIONS], []);
 
@@ -74,6 +75,10 @@ export function ExploreScreen() {
   const hasMore = visible < filtered.length;
 
   const resetPagination = () => setVisible(INITIAL_DESTINATIONS);
+  const showLessDestinations = () => {
+    setVisible(INITIAL_DESTINATIONS);
+    destinationsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   return (
     <main className="min-h-screen bg-background">
@@ -141,7 +146,10 @@ export function ExploreScreen() {
 
       {/* Destinazioni */}
       <section className="mx-auto max-w-5xl px-5 pb-16">
-        <h2 className="font-display text-xl font-semibold text-foreground">
+        <h2
+          ref={destinationsRef}
+          className="scroll-mt-24 font-display text-xl font-semibold text-foreground"
+        >
           Esplora luoghi e destinazioni
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -256,14 +264,21 @@ export function ExploreScreen() {
         </div>
 
 
-        {hasMore && (
-          <div className="mt-6 flex justify-center">
-            <Button
-              variant="secondary"
-              onClick={() => setVisible((v) => v + DESTINATIONS_STEP)}
-            >
-              Altro
-            </Button>
+        {(hasMore || visible > INITIAL_DESTINATIONS) && (
+          <div className="mt-6 flex flex-wrap justify-center gap-2">
+            {hasMore && (
+              <Button
+                variant="secondary"
+                onClick={() => setVisible((v) => v + DESTINATIONS_STEP)}
+              >
+                Altro
+              </Button>
+            )}
+            {visible > INITIAL_DESTINATIONS && (
+              <Button variant="outline" onClick={showLessDestinations}>
+                Mostra meno
+              </Button>
+            )}
           </div>
         )}
       </section>

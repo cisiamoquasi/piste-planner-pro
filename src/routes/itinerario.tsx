@@ -15,6 +15,7 @@ import {
   CalendarRange,
   Wallet,
   CloudSun,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -104,6 +105,9 @@ export function ItineraryForm({ targetResort }: { targetResort?: string }) {
   const [fuelPrice, setFuelPrice] = useState(1.85);
   const [consumption, setConsumption] = useState(6.5);
   const [rental, setRental] = useState(false);
+  const [adultsCount, setAdultsCount] = useState(1);
+  const [childrenCount, setChildrenCount] = useState(0);
+  const [rentalCount, setRentalCount] = useState(1);
   const [level, setLevel] = useState<SkierLevel>("intermediate");
   const [radius, setRadius] = useState(800);
   const [qualityWeight, setQualityWeight] = useState(3);
@@ -156,6 +160,13 @@ export function ItineraryForm({ targetResort }: { targetResort?: string }) {
     if (!hotelTouched) setHotel(days > 1);
   }, [days, hotelTouched]);
 
+  const totalGuests = Math.max(1, adultsCount) + Math.max(0, childrenCount);
+
+  // Il numero di noleggi non può superare i partecipanti.
+  useEffect(() => {
+    setRentalCount((c) => Math.min(Math.max(1, c), totalGuests));
+  }, [totalGuests]);
+
   const submit = () => {
     if (!origin) {
       setError("Scegli un punto di partenza dall'elenco o usa la tua posizione.");
@@ -187,6 +198,9 @@ export function ItineraryForm({ targetResort }: { targetResort?: string }) {
         returnTime,
         hotel,
         hotelCategory,
+        adultsCount: Math.max(1, adultsCount),
+        childrenCount: Math.max(0, childrenCount),
+        rentalCount: rental ? Math.min(totalGuests, Math.max(1, rentalCount)) : 0,
         ...(targetResort ? { targetResort } : {}),
       },
     });
@@ -300,6 +314,45 @@ export function ItineraryForm({ targetResort }: { targetResort?: string }) {
           </p>
         </Block>
 
+        <Block icon={<Users className="h-5 w-5" />} title="Chi viene sulla neve">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <Label htmlFor="adultsCount" className="text-sm">
+                Numero adulti
+              </Label>
+              <Input
+                id="adultsCount"
+                type="number"
+                min="1"
+                max="12"
+                inputMode="numeric"
+                className="mt-1"
+                value={adultsCount}
+                onChange={(e) => setAdultsCount(Math.max(1, Number(e.target.value) || 1))}
+              />
+            </div>
+            <div>
+              <Label htmlFor="childrenCount" className="text-sm">
+                Numero bambini
+              </Label>
+              <Input
+                id="childrenCount"
+                type="number"
+                min="0"
+                max="12"
+                inputMode="numeric"
+                className="mt-1"
+                value={childrenCount}
+                onChange={(e) => setChildrenCount(Math.max(0, Number(e.target.value) || 0))}
+              />
+            </div>
+          </div>
+          <p className="mt-3 text-sm text-muted-foreground">
+            {totalGuests} {totalGuests === 1 ? "persona" : "persone"} in viaggio. Lo skipass dei
+            bambini viene calcolato con la tariffa ridotta.
+          </p>
+        </Block>
+
         <Block icon={<Car className="h-5 w-5" />} title="Auto e consumi">
           <div className="flex flex-wrap gap-2">
             {FUELS.map((f) => (
@@ -353,9 +406,30 @@ export function ItineraryForm({ targetResort }: { targetResort?: string }) {
           <div className="flex items-center gap-3">
             <Switch id="rental" checked={rental} onCheckedChange={setRental} />
             <Label htmlFor="rental" className="text-sm text-muted-foreground">
-              Sì, noleggio sci e scarponi sul posto
+              Hai bisogno del noleggio attrezzatura?
             </Label>
           </div>
+          {rental && (
+            <div className="mt-4 sm:max-w-xs">
+              <Label htmlFor="rentalCount" className="text-sm">
+                Quante persone noleggiano (max {totalGuests})
+              </Label>
+              <Input
+                id="rentalCount"
+                type="number"
+                min="1"
+                max={totalGuests}
+                inputMode="numeric"
+                className="mt-1"
+                value={rentalCount}
+                onChange={(e) =>
+                  setRentalCount(
+                    Math.min(totalGuests, Math.max(1, Number(e.target.value) || 1)),
+                  )
+                }
+              />
+            </div>
+          )}
           {rental && (
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
               {LEVELS.map((l) => (

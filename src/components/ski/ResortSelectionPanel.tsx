@@ -10,7 +10,14 @@ import {
   saveItinerary,
   type NearbyPlace,
 } from "@/lib/ski/itinerary.functions";
-import { estimatedNightPrice, estimatedRentalPrice, euro, totalNights, tripBreakdown } from "@/lib/ski/pricing";
+import {
+  estimatedNightPrice,
+  estimatedRentalPrice,
+  euro,
+  roomsFor,
+  totalNights,
+  tripBreakdown,
+} from "@/lib/ski/pricing";
 import type { Resort } from "@/lib/ski/types";
 
 interface Props {
@@ -23,6 +30,12 @@ interface Props {
   travelCost?: number;
   /** Costo skipass per il periodo scelto. */
   skipassCost?: number;
+  /** Ospiti totali (adulti + bambini). */
+  totalGuests?: number;
+  /** Persone che noleggiano l'attrezzatura. */
+  rentalCount?: number;
+  /** Stima €/giorno del noleggio prima di scegliere il negozio. */
+  defaultRentalPerDay?: number;
   /** Voto di efficienza calcolato per questo comprensorio. */
   efficiencyScore?: number;
   onBack: () => void;
@@ -38,6 +51,9 @@ export function ResortSelectionPanel({
   radiusM,
   travelCost = 0,
   skipassCost = 0,
+  totalGuests = 1,
+  rentalCount = 0,
+  defaultRentalPerDay = 0,
   efficiencyScore,
   onBack,
   onSaved,
@@ -64,8 +80,11 @@ export function ResortSelectionPanel({
     travel: travelCost,
     skipass: skipassCost,
     nightPrice: hotel ? estimatedNightPrice(hotel) : 0,
-    rentalPerDay: rental ? estimatedRentalPrice(rental) : 0,
+    // Prima di scegliere il negozio usiamo la stima media: mai 0 €.
+    rentalPerDay: rental ? estimatedRentalPrice(rental) : defaultRentalPerDay,
     totalDays: days,
+    totalGuests,
+    rentalCount,
   });
 
   useEffect(() => {
@@ -211,13 +230,21 @@ export function ResortSelectionPanel({
           <li>
             Alloggio: {euro(breakdown.hotel)}{" "}
             <span className="text-xs">
-              ({totalNights(days)} {totalNights(days) === 1 ? "notte" : "notti"})
+              ({totalNights(days)} {totalNights(days) === 1 ? "notte" : "notti"} ·{" "}
+              {roomsFor(totalGuests)} {roomsFor(totalGuests) === 1 ? "camera" : "camere"} per{" "}
+              {totalGuests} {totalGuests === 1 ? "persona" : "persone"})
             </span>
           </li>
           <li>
-            Noleggio: {euro(breakdown.rental)} <span className="text-xs">({days} gg)</span>
+            Noleggio: {euro(breakdown.rental)}{" "}
+            <span className="text-xs">
+              ({rentalCount} {rentalCount === 1 ? "persona" : "persone"} · {days} gg)
+            </span>
           </li>
-          <li>Skipass: {euro(breakdown.skipass)}</li>
+          <li>
+            Skipass: {euro(breakdown.skipass)}{" "}
+            <span className="text-xs">(adulti e bambini, tariffa ridotta inclusa)</span>
+          </li>
         </ul>
         {typeof efficiencyScore === "number" && (
           <p className="mt-2 text-sm text-foreground">

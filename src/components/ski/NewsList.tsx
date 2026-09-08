@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { CalendarDays, ExternalLink } from "lucide-react";
@@ -29,6 +29,12 @@ const STEP = 10;
 export function NewsList({ news }: { news: NewsItem[] }) {
   const [visible, setVisible] = useState(INITIAL);
   const fetchImages = useServerFn(newsImages);
+  const topRef = useRef<HTMLDivElement>(null);
+
+  const showLess = () => {
+    setVisible(INITIAL);
+    topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   const shown = news.slice(0, visible);
   const missing = shown.filter((n) => !n.image).map((n) => n.url);
@@ -44,6 +50,7 @@ export function NewsList({ news }: { news: NewsItem[] }) {
 
   return (
     <div>
+      <div ref={topRef} className="scroll-mt-24" />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {shown.map((n) => {
           const real = n.image ?? data?.images?.[n.url] ?? "";
@@ -93,11 +100,18 @@ export function NewsList({ news }: { news: NewsItem[] }) {
         })}
       </div>
 
-      {hasMore && (
-        <div className="mt-5 flex justify-center">
-          <Button variant="secondary" onClick={() => setVisible((v) => v + STEP)}>
-            Mostra altre notizie
-          </Button>
+      {(hasMore || visible > INITIAL) && (
+        <div className="mt-5 flex flex-wrap justify-center gap-2">
+          {hasMore && (
+            <Button variant="secondary" onClick={() => setVisible((v) => v + STEP)}>
+              Mostra altre notizie
+            </Button>
+          )}
+          {visible > INITIAL && (
+            <Button variant="outline" onClick={showLess}>
+              Mostra meno
+            </Button>
+          )}
         </div>
       )}
     </div>

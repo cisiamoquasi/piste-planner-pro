@@ -17,7 +17,7 @@ import { ResortSelectionPanel } from "@/components/ski/ResortSelectionPanel";
 import { RESORT_CATALOG } from "@/lib/ski/catalog";
 import { computeDrives } from "@/lib/ski/maps.functions";
 import { estimateRoadKm } from "@/lib/ski/geo";
-import { rankResorts } from "@/lib/ski/scoring";
+import { rankResorts, rentalDailyPrice } from "@/lib/ski/scoring";
 import { departureIso } from "@/lib/ski/traffic";
 import { isResortOpen, seasonForRange } from "@/lib/ski/season";
 import type { DriveInfo, Resort, SearchInput } from "@/lib/ski/types";
@@ -42,6 +42,9 @@ const searchSchema = z.object({
   returnTime: z.string().regex(/^\d{2}:\d{2}$/).default("17:30"),
   hotel: z.boolean().default(false),
   hotelCategory: z.enum(["budget", "comfort", "luxury"]).default("comfort"),
+  adultsCount: z.number().min(1).max(20).default(1),
+  childrenCount: z.number().min(0).max(20).default(0),
+  rentalCount: z.number().min(0).max(40).default(0),
   /** Comprensorio scelto dall'utente: resta sempre in prima posizione. */
   targetResort: z.string().optional(),
 });
@@ -122,6 +125,9 @@ function ResultsPage() {
     returnTime: search.returnTime,
     hotel: search.hotel,
     hotelCategory: search.hotelCategory,
+    adultsCount: search.adultsCount,
+    childrenCount: search.childrenCount,
+    rentalCount: search.rentalCount,
   };
 
   // Fase A: ranking grezzo sui comprensori aperti con drive stimate.
@@ -261,6 +267,13 @@ function ResultsPage() {
                       result.costs.fuel + result.costs.tolls + result.costs.parking
                     }
                     skipassCost={result.costs.skipass}
+                    totalGuests={search.adultsCount + search.childrenCount}
+                    rentalCount={search.rentalCount}
+                    defaultRentalPerDay={
+                      search.rentalCount > 0
+                        ? rentalDailyPrice(result.resort, search.level)
+                        : 0
+                    }
                     efficiencyScore={result.score}
                     onBack={() => setSelectedId(null)}
                     onSaved={() => setSavedOpen(true)}

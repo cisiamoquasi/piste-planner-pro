@@ -26,6 +26,11 @@ export function totalNights(totalDays: number): number {
   return Math.max(1, totalDays - 1);
 }
 
+/** Camere necessarie: due ospiti per camera. */
+export function roomsFor(totalGuests: number): number {
+  return Math.max(1, Math.ceil(Math.max(1, totalGuests) / 2));
+}
+
 /** Stima €/notte di un alloggio Google Places: mai 0 €. */
 export function estimatedNightPrice(place: Pick<NearbyPlace, "priceLevel" | "rating">): number {
   const base = place.priceLevel ? NIGHT_BY_LEVEL[place.priceLevel] : undefined;
@@ -55,18 +60,32 @@ export interface TripBreakdown {
   total: number;
 }
 
-/** Costo totale stimato = trasporto + hotel*notti + noleggio*giorni + skipass. */
+/**
+ * Costo totale stimato =
+ *   trasporto + (camere x €/notte x notti) + (persone x €/giorno x giorni) + skipass.
+ */
 export function tripBreakdown(params: {
   travel: number;
   skipass: number;
   nightPrice: number;
   rentalPerDay: number;
   totalDays: number;
+  /** Ospiti totali (adulti + bambini). Default 1. */
+  totalGuests?: number;
+  /** Persone che noleggiano l'attrezzatura. Default 0. */
+  rentalCount?: number;
 }): TripBreakdown {
   const nights = totalNights(params.totalDays);
+  const guests = Math.max(1, params.totalGuests ?? 1);
+  const renters = Math.max(0, params.rentalCount ?? 0);
   const round = (n: number) => Math.round(n * 100) / 100;
-  const hotel = round(Math.max(MIN_NIGHT_PRICE, params.nightPrice) * nights);
-  const rental = round(Math.max(0, params.rentalPerDay) * params.totalDays);
+  const hotel = round(
+    Math.max(MIN_NIGHT_PRICE, params.nightPrice) * nights * roomsFor(guests),
+  );
+  const rental =
+    renters > 0
+      ? round(Math.max(MIN_RENTAL_DAY, params.rentalPerDay) * renters * params.totalDays)
+      : 0;
   const travel = round(Math.max(0, params.travel));
   const skipass = round(Math.max(0, params.skipass));
   return { travel, hotel, rental, skipass, total: round(travel + hotel + rental + skipass) };

@@ -5,12 +5,14 @@ import { qualityFactor, qualityIndex } from "./quality";
 import { estimateTollRoundTrip } from "./tolls";
 import { trafficFactors } from "./traffic";
 import { estimateWeather, weatherPenalty as computeWeatherPenalty } from "./weather";
+import { MIN_RENTAL_DAY } from "./pricing";
 import type {
   CostBreakdown,
   DriveInfo,
   RankedResort,
   Resort,
   SearchInput,
+  SkierLevel,
 } from "./types";
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
@@ -48,6 +50,10 @@ export function servicesAvailability(resort: Resort, radiusM: number): number {
   return Math.round((kmScore * 0.6 + liftScore * 0.4) * 100) / 100;
 }
 
+/** Sconto standard sullo skipass bambini rispetto alla tariffa adulti. */
+export const CHILD_SKIPASS_RATIO = 0.7;
+
+/** Skipass adulto per l'intero periodo. */
 export function skipassCost(resort: Resort, days: number): number {
   const t = resort.skipass;
   if (days <= 1) return t.day1;
@@ -57,9 +63,51 @@ export function skipassCost(resort: Resort, days: number): number {
   return Math.round(t.day6 + (days - 6) * (t.day6 / 6) * 0.85);
 }
 
+/** Tariffa giornaliera adulto e bambino. */
+export function skipassDailyRates(
+  resort: Resort,
+  days: number,
+): { adult: number; child: number } {
+  const perDay = skipassCost(resort, days) / Math.max(1, days);
+  return {
+    adult: Math.round(perDay * 100) / 100,
+    child: Math.round(perDay * CHILD_SKIPASS_RATIO * 100) / 100,
+  };
+}
+
+/** Skipass totale differenziando adulti e bambini. */
+export function skipassTotal(
+  resort: Resort,
+  days: number,
+  adultsCount: number,
+  childrenCount: number,
+): number {
+  const { adult, child } = skipassDailyRates(resort, days);
+  const total = (Math.max(1, adultsCount) * adult + Math.max(0, childrenCount) * child) * days;
+  return Math.round(total * 100) / 100;
+}
+
+/** Camere necessarie: due ospiti per camera. */
+export function roomsNeeded(totalGuests: number): number {
+  return Math.max(1, Math.ceil(Math.max(1, totalGuests) / 2));
+}
+
 export function queueHoursPerDay(resort: Resort, weekend: boolean): number {
   const minutes = weekend ? resort.queueMinutesWeekend : resort.queueMinutesWeekday;
   return (minutes * resort.ridesPerDay) / 60;
+}
+
+/** Prezzo medio giornaliero del noleggio: mai 0 €. */
+export function rentalDailyPrice(resort: Resort, level: SkierLevel): number {
+  return Math.max(MIN_RENTAL_DAY, averageRentalPrice(resort, level));
+}
+
+/** Persone che noleggiano davvero (mai più degli occupanti). */
+export function rentalPeople(input: SearchInput): number {
+  if (!input.rental) return 0;
+  const guests = Math.max(1, input.adultsCount) + Math.max(0, input.childrenCount);
+  const wanted = input.rentalCount > 0 ? input.rentalCount : guests;
+  return Math.min(guests, wanted);
 }
 
 export function computeCosts(
@@ -68,13 +116,17 @@ export function computeCosts(
   drive: DriveInfo,
   parkingPricePerDay: number,
 ): CostBreakdown {
+  const adults = Math.max(1, input.adultsCount);
+  const children = Math.max(0, input.childrenCount);
+  const rooms = roomsNeeded(adults + children);
+
   const roundTripKm = drive.distanceKm * 2;
   const fuel = (roundTripKm / 100) * input.consumption * input.fuelPrice;
   const tolls = estimateTollRoundTrip(resort, drive.distanceKm);
-  const skipass = skipassCost(resort, input.days);
-  const rental = input.rental ? averageRentalPrice(resort, input.level) * input.days : 0;
+  const skipass = skipassTotal(resort, input.days, adults, children);
+  const rental = rentalPeople(input) * rentalDailyPrice(resort, input.level) * input.days;
   const parking = parkingPricePerDay * input.days;
-  const hotel = hotelCost(resort, input.hotelCategory, input.days, input.hotel);
+  const hotel = hotelCost(resort, input.hotelCategory, input.days, input.hotel) * rooms;
   const total = fuel + tolls + skipass + rental + parking + hotel;
   const r = (n: number) => Math.round(n * 100) / 100;
   return {
@@ -134,7 +186,7 @@ export function evaluateResort(
     ? (costs.total - input.maxBudget) * WEIGHTS.overBudgetPerEuro
     : 0;
 
-  const weather = estimateWeather(resort, input.startDate);
+  const weather = estimateWeather(resort, input.startDate, input.days);
   const weatherPenalty = computeWeatherPenalty(weather, input.weatherWeight, input.days);
 
   // Disponibilità di hotel e noleggi nel raggio attorno all'impianto.
