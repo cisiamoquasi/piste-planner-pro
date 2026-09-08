@@ -135,6 +135,18 @@ export function ResortSelectionPanel({
     };
   }, [resort.id, resort.lat, resort.lng, radiusM, findNearby]);
 
+  // Dopo il login ripristiniamo alloggio e noleggio scelti prima dell'accesso.
+  useEffect(() => {
+    if (loading || draftApplied.current || !userId) return;
+    const draft = loadPendingItinerary();
+    if (!draft || draft.resortId !== resort.id || !draft.hotel || !draft.rental) return;
+    draftApplied.current = true;
+    setHotel(draft.hotel);
+    setRental(draft.rental);
+    setAutoSave(true);
+  }, [loading, userId, resort.id]);
+
+
   const save = async () => {
     if (!canSave || !hotel || !rental) return;
     setSaving(true);
