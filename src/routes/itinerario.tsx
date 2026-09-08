@@ -313,6 +313,45 @@ export function ItineraryForm({ targetResort }: { targetResort?: string }) {
           </p>
         </Block>
 
+        <Block icon={<Users className="h-5 w-5" />} title="Chi viene sulla neve">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <Label htmlFor="adultsCount" className="text-sm">
+                Numero adulti
+              </Label>
+              <Input
+                id="adultsCount"
+                type="number"
+                min="1"
+                max="12"
+                inputMode="numeric"
+                className="mt-1"
+                value={adultsCount}
+                onChange={(e) => setAdultsCount(Math.max(1, Number(e.target.value) || 1))}
+              />
+            </div>
+            <div>
+              <Label htmlFor="childrenCount" className="text-sm">
+                Numero bambini
+              </Label>
+              <Input
+                id="childrenCount"
+                type="number"
+                min="0"
+                max="12"
+                inputMode="numeric"
+                className="mt-1"
+                value={childrenCount}
+                onChange={(e) => setChildrenCount(Math.max(0, Number(e.target.value) || 0))}
+              />
+            </div>
+          </div>
+          <p className="mt-3 text-sm text-muted-foreground">
+            {totalGuests} {totalGuests === 1 ? "persona" : "persone"} in viaggio. Lo skipass dei
+            bambini viene calcolato con la tariffa ridotta.
+          </p>
+        </Block>
+
         <Block icon={<Car className="h-5 w-5" />} title="Auto e consumi">
           <div className="flex flex-wrap gap-2">
             {FUELS.map((f) => (
