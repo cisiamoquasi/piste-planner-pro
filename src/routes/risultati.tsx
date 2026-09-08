@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, CheckCircle2, Loader2, Snowflake } from "lucide-react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import { estimateRoadKm } from "@/lib/ski/geo";
 import { rankResorts, rentalDailyPrice } from "@/lib/ski/scoring";
 import { departureIso } from "@/lib/ski/traffic";
 import { isResortOpen, seasonForRange } from "@/lib/ski/season";
+import { loadPendingItinerary } from "@/lib/ski/pending-itinerary";
 import type { DriveInfo, Resort, SearchInput } from "@/lib/ski/types";
 
 const searchSchema = z.object({
