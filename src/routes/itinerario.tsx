@@ -405,9 +405,30 @@ export function ItineraryForm({ targetResort }: { targetResort?: string }) {
           <div className="flex items-center gap-3">
             <Switch id="rental" checked={rental} onCheckedChange={setRental} />
             <Label htmlFor="rental" className="text-sm text-muted-foreground">
-              Sì, noleggio sci e scarponi sul posto
+              Hai bisogno del noleggio attrezzatura?
             </Label>
           </div>
+          {rental && (
+            <div className="mt-4 sm:max-w-xs">
+              <Label htmlFor="rentalCount" className="text-sm">
+                Quante persone noleggiano (max {totalGuests})
+              </Label>
+              <Input
+                id="rentalCount"
+                type="number"
+                min="1"
+                max={totalGuests}
+                inputMode="numeric"
+                className="mt-1"
+                value={rentalCount}
+                onChange={(e) =>
+                  setRentalCount(
+                    Math.min(totalGuests, Math.max(1, Number(e.target.value) || 1)),
+                  )
+                }
+              />
+            </div>
+          )}
           {rental && (
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
               {LEVELS.map((l) => (
