@@ -75,6 +75,11 @@ export function ResortSelectionPanel({
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+  /** Ripristino della bozza salvata prima del login. */
+  const [autoSave, setAutoSave] = useState(false);
+  const draftApplied = useRef(false);
+
 
   // L'utente può salvare solo dopo aver confrontato e scelto hotel + noleggio.
   const datesReady = Boolean(startDate && endDate);
