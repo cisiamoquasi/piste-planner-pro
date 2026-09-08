@@ -50,6 +50,7 @@ export function NewsList({ news }: { news: NewsItem[] }) {
 
   return (
     <div>
+      <div ref={topRef} className="scroll-mt-24" />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {shown.map((n) => {
           const real = n.image ?? data?.images?.[n.url] ?? "";
