@@ -186,7 +186,7 @@ export function evaluateResort(
     ? (costs.total - input.maxBudget) * WEIGHTS.overBudgetPerEuro
     : 0;
 
-  const weather = estimateWeather(resort, input.startDate);
+  const weather = estimateWeather(resort, input.startDate, input.days);
   const weatherPenalty = computeWeatherPenalty(weather, input.weatherWeight, input.days);
 
   // Disponibilità di hotel e noleggi nel raggio attorno all'impianto.
