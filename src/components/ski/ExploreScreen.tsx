@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { CalendarClock, MapPin, Mountain, Search, Snowflake } from "lucide-react";
@@ -50,6 +50,7 @@ export function ExploreScreen() {
   const [minKm, setMinKm] = useState(0);
   const [snow, setSnow] = useState<string>("Tutte");
   const [visible, setVisible] = useState(INITIAL_DESTINATIONS);
+  const destinationsRef = useRef<HTMLHeadingElement>(null);
 
   const regions = useMemo(() => ["Tutte", ...CATALOG_REGIONS], []);
 
