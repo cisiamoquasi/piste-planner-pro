@@ -159,6 +159,13 @@ export function ItineraryForm({ targetResort }: { targetResort?: string }) {
     if (!hotelTouched) setHotel(days > 1);
   }, [days, hotelTouched]);
 
+  const totalGuests = Math.max(1, adultsCount) + Math.max(0, childrenCount);
+
+  // Il numero di noleggi non può superare i partecipanti.
+  useEffect(() => {
+    setRentalCount((c) => Math.min(Math.max(1, c), totalGuests));
+  }, [totalGuests]);
+
   const submit = () => {
     if (!origin) {
       setError("Scegli un punto di partenza dall'elenco o usa la tua posizione.");
@@ -190,6 +197,9 @@ export function ItineraryForm({ targetResort }: { targetResort?: string }) {
         returnTime,
         hotel,
         hotelCategory,
+        adultsCount: Math.max(1, adultsCount),
+        childrenCount: Math.max(0, childrenCount),
+        rentalCount: rental ? Math.min(totalGuests, Math.max(1, rentalCount)) : 0,
         ...(targetResort ? { targetResort } : {}),
       },
     });
