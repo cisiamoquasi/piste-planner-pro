@@ -104,6 +104,9 @@ export function ItineraryForm({ targetResort }: { targetResort?: string }) {
   const [fuelPrice, setFuelPrice] = useState(1.85);
   const [consumption, setConsumption] = useState(6.5);
   const [rental, setRental] = useState(false);
+  const [adultsCount, setAdultsCount] = useState(1);
+  const [childrenCount, setChildrenCount] = useState(0);
+  const [rentalCount, setRentalCount] = useState(1);
   const [level, setLevel] = useState<SkierLevel>("intermediate");
   const [radius, setRadius] = useState(800);
   const [qualityWeight, setQualityWeight] = useState(3);
