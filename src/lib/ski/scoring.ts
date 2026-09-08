@@ -95,19 +95,36 @@ export function queueHoursPerDay(resort: Resort, weekend: boolean): number {
   return (minutes * resort.ridesPerDay) / 60;
 }
 
+/** Prezzo medio giornaliero del noleggio: mai 0 €. */
+export function rentalDailyPrice(resort: Resort, level: SkierLevel): number {
+  return Math.max(MIN_RENTAL_DAY, averageRentalPrice(resort, level));
+}
+
+/** Persone che noleggiano davvero (mai più degli occupanti). */
+export function rentalPeople(input: SearchInput): number {
+  if (!input.rental) return 0;
+  const guests = Math.max(1, input.adultsCount) + Math.max(0, input.childrenCount);
+  const wanted = input.rentalCount > 0 ? input.rentalCount : guests;
+  return Math.min(guests, wanted);
+}
+
 export function computeCosts(
   resort: Resort,
   input: SearchInput,
   drive: DriveInfo,
   parkingPricePerDay: number,
 ): CostBreakdown {
+  const adults = Math.max(1, input.adultsCount);
+  const children = Math.max(0, input.childrenCount);
+  const rooms = roomsNeeded(adults + children);
+
   const roundTripKm = drive.distanceKm * 2;
   const fuel = (roundTripKm / 100) * input.consumption * input.fuelPrice;
   const tolls = estimateTollRoundTrip(resort, drive.distanceKm);
-  const skipass = skipassCost(resort, input.days);
-  const rental = input.rental ? averageRentalPrice(resort, input.level) * input.days : 0;
+  const skipass = skipassTotal(resort, input.days, adults, children);
+  const rental = rentalPeople(input) * rentalDailyPrice(resort, input.level) * input.days;
   const parking = parkingPricePerDay * input.days;
-  const hotel = hotelCost(resort, input.hotelCategory, input.days, input.hotel);
+  const hotel = hotelCost(resort, input.hotelCategory, input.days, input.hotel) * rooms;
   const total = fuel + tolls + skipass + rental + parking + hotel;
   const r = (n: number) => Math.round(n * 100) / 100;
   return {
