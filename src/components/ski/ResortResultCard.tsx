@@ -12,11 +12,11 @@ import {
   MoveVertical,
   Route as RouteIcon,
   Store,
-  CloudSun,
   TriangleAlert,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { WeatherTagDialog } from "./WeatherTagDialog";
 import { ResultsMap } from "./ResultsMap";
 import { ScoreBreakdown } from "./ScoreBreakdown";
 import type { RankedResort, SkierLevel } from "@/lib/ski/types";
@@ -120,10 +120,7 @@ export function ResortResultCard({
               <MoveVertical className="h-3.5 w-3.5" />
               {resort.vertical_drop} m di dislivello
             </Badge>
-            <Badge variant="outline" className="gap-1">
-              <CloudSun className="h-3.5 w-3.5" />
-              {result.weather.label}
-            </Badge>
+            <WeatherTagDialog weather={result.weather} resortName={resort.name} />
             {result.overBudget && (
               <Badge variant="destructive" className="gap-1">
                 <TriangleAlert className="h-3.5 w-3.5" />
