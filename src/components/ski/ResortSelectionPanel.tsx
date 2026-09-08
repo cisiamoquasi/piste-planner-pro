@@ -10,7 +10,14 @@ import {
   saveItinerary,
   type NearbyPlace,
 } from "@/lib/ski/itinerary.functions";
-import { estimatedNightPrice, estimatedRentalPrice, euro, totalNights, tripBreakdown } from "@/lib/ski/pricing";
+import {
+  estimatedNightPrice,
+  estimatedRentalPrice,
+  euro,
+  roomsFor,
+  totalNights,
+  tripBreakdown,
+} from "@/lib/ski/pricing";
 import type { Resort } from "@/lib/ski/types";
 
 interface Props {
@@ -223,13 +230,21 @@ export function ResortSelectionPanel({
           <li>
             Alloggio: {euro(breakdown.hotel)}{" "}
             <span className="text-xs">
-              ({totalNights(days)} {totalNights(days) === 1 ? "notte" : "notti"})
+              ({totalNights(days)} {totalNights(days) === 1 ? "notte" : "notti"} ·{" "}
+              {roomsFor(totalGuests)} {roomsFor(totalGuests) === 1 ? "camera" : "camere"} per{" "}
+              {totalGuests} {totalGuests === 1 ? "persona" : "persone"})
             </span>
           </li>
           <li>
-            Noleggio: {euro(breakdown.rental)} <span className="text-xs">({days} gg)</span>
+            Noleggio: {euro(breakdown.rental)}{" "}
+            <span className="text-xs">
+              ({rentalCount} {rentalCount === 1 ? "persona" : "persone"} · {days} gg)
+            </span>
           </li>
-          <li>Skipass: {euro(breakdown.skipass)}</li>
+          <li>
+            Skipass: {euro(breakdown.skipass)}{" "}
+            <span className="text-xs">(adulti e bambini, tariffa ridotta inclusa)</span>
+          </li>
         </ul>
         {typeof efficiencyScore === "number" && (
           <p className="mt-2 text-sm text-foreground">
