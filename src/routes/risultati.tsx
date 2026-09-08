@@ -17,7 +17,7 @@ import { ResortSelectionPanel } from "@/components/ski/ResortSelectionPanel";
 import { RESORT_CATALOG } from "@/lib/ski/catalog";
 import { computeDrives } from "@/lib/ski/maps.functions";
 import { estimateRoadKm } from "@/lib/ski/geo";
-import { rankResorts } from "@/lib/ski/scoring";
+import { rankResorts, rentalDailyPrice } from "@/lib/ski/scoring";
 import { departureIso } from "@/lib/ski/traffic";
 import { isResortOpen, seasonForRange } from "@/lib/ski/season";
 import type { DriveInfo, Resort, SearchInput } from "@/lib/ski/types";
@@ -267,6 +267,13 @@ function ResultsPage() {
                       result.costs.fuel + result.costs.tolls + result.costs.parking
                     }
                     skipassCost={result.costs.skipass}
+                    totalGuests={search.adultsCount + search.childrenCount}
+                    rentalCount={search.rentalCount}
+                    defaultRentalPerDay={
+                      search.rentalCount > 0
+                        ? rentalDailyPrice(result.resort, search.level)
+                        : 0
+                    }
                     efficiencyScore={result.score}
                     onBack={() => setSelectedId(null)}
                     onSaved={() => setSavedOpen(true)}
